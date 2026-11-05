@@ -1254,7 +1254,7 @@
       );
     }
 
-    // 学部・学年・表示の設定（メニューから）。学部は任意、学年は「答えない」も選べる
+    // 学部・学年・表示の設定（マイページの「変更」から）。学部は任意、学年は「答えない」も選べる
     function ProfileForm({ initial, onSave, saveLabel }) {
       const [faculty, setFaculty] = useState(initial.faculty || "");
       const [grade, setGrade] = useState(initial.grade || 0);
@@ -1312,7 +1312,7 @@
             ))}
             <button onClick={() => pick(0)} className="col-span-2 text-[13px] font-bold text-sub py-2.5 press">答えない</button>
           </div>
-          <p className="text-[11.5px] text-mute text-center">あとから変えられます</p>
+          <p className="text-[11.5px] text-mute text-center">あとからマイページで変えられます</p>
         </div>
       );
     }
@@ -2204,7 +2204,7 @@
       ] },
       { title: "入口とマイページ（11/5）", items: [
         "入口：Google／Appleでサインイン → 大学メールで在学確認（6桁コード。メールは保存しない。大学はドメインで決まるので、ログイン画面に大学名は出さない）→「いま何年生？」を1タップ（答えないも可）→ ホーム。招待コードでも登録できる",
-        "学部は聞かない（メニューから任意で設定）。表示はふだん「匿名・学年」で、学部は本人がオンにしたときだけ（学部×学年は人数が少なく、人が絞り込まれやすいため）",
+        "学部は聞かない（マイページから任意で設定）。表示はふだん「匿名・学年」で、学部は本人がオンにしたときだけ（学部×学年は人数が少なく、人が絞り込まれやすいため）",
         "マイページ：自分だけが見られる記録。質問・回答（ペタり場のペタも回答として入る）・気になる・イベント（アプリ内の主催・参加したい、大学のイベントへの参加状況＝運営が手で更新）",
         "イベントの主催者：日時ありは主催団体名を毎回入力（必須）。いつでもの募集は「匿名・学年」か団体名",
         "言葉：聞く側は「質問」のまま、答える側は「ペタ」に統一（回答→ペタ、回答する→ペタる、回答N件→ペタN枚、AIの回答まとめ→AIのペタまとめ）。初めてペタるときだけ「『ペタ』は回答のこと」と案内。付せんの色帯はやめ、ペタのカードは白地＋枠線で読みやすく"
@@ -2248,8 +2248,7 @@
             </header>
             <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 pt-4 space-y-5" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}>
               {!sub && (<>
-                <Group title="あなた">
-                  <Row icon="badge" label="学部・学年・匿名の設定" sub={`${me.faculty} ${gradeLabel(me.grade)}・${me.anonDefault ? "ふだんは匿名" : "学部・学年を表示"}`} onClick={onEditProfile} />
+                <Group title="アプリ">
                   <div className="px-4 py-3.5 space-y-2">
                     <span className="flex items-center gap-3"><Icon n="calendar_month" size={22} className="text-brand-deep" /><span className="text-[14px] font-bold flex-1">時期の表示</span></span>
                     <Segmented value={termMode} onChange={setTermMode} options={[{ value: "auto", label: `自動（${autoTerm()}）` }, { value: "前期", label: "前期" }, { value: "後期", label: "後期" }]} />
@@ -3262,7 +3261,10 @@
       const waitH = waitTop.map((p, i) => i === 0 ? { ...p, __answerHead: true } : p);
       // 1年生：まず「答えが付いている質問」で価値を見せる（回答待ちは3件目の後）。上級生：回答待ちを先頭に
       const pinnedQ = pinMine(qPosts, p => p.author.mine, p => p.at, p => p.bestAnswerId || p.closed);
-      const homeFeed = (me.grade <= 1 ? [...restH.slice(0, 3), ...waitH, ...restH.slice(3)] : [...waitH, ...restH]).filter(p => !pinnedQ.some(x => x.id === p.id));
+      const homeFeed0 = (me.grade <= 1 ? [...restH.slice(0, 3), ...waitH, ...restH.slice(3)] : [...waitH, ...restH]).filter(p => !pinnedQ.some(x => x.id === p.id));
+      // 「後輩がペタを待っています」の続きに解決済みが混ざって見えないよう、回答待ちの後ろに区切りの見出しを入れる
+      const lastWait = homeFeed0.map(p => waitTop.some(w => w.id === p.id)).lastIndexOf(true);
+      const homeFeed = homeFeed0.map((p, i) => lastWait >= 0 && i === lastWait + 1 ? { ...p, __afterWait: true } : p);
       const odaiSlot = Math.min(homeFeed.length - 1, me.grade <= 1 ? 1 : waitTop.length + 1);
       const openGathers = events.filter(e => !e.closed);
 
@@ -3397,6 +3399,7 @@
                       {homeFeed.map((p, i) => (
                         <React.Fragment key={p.id}>
                           {p.__answerHead && <p id="waiting" className="text-[12px] font-black text-brand-deep flex items-center gap-1 px-1 pt-1 scroll-mt-20"><Icon n="forum" size={15} />{me.grade === 1 ? "ペタ募集中" : `後輩がペタを待っています`}</p>}
+                          {p.__afterWait && <p className="text-[12px] font-black text-sub flex items-center gap-1 px-1 pt-2"><Icon n="forum" size={15} />ほかの質問</p>}
                           <QuestionRow post={p} showTop unread={unreadPostIds.has(p.id)} onOpen={() => openPost(p.id)} onWatch={toggleWatch} />
                           {/* ③ 今週のお題は一覧の途中に1枚だけ */}
                           {i === odaiSlot && odaiNow && (
