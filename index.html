@@ -3119,8 +3119,15 @@
     ];
 
     function App() {
-      const [stage, setStage] = useState("gate");          // gate → onboard → app
-      const [me, setMe] = useState({ faculty: "", grade: 1, anonDefault: true });
+      // 🔧 確認用：ログイン（サインイン・大学メール・確認コード・学年）を省いてホームから始める
+      //   ・元に戻すときは SKIP_LOGIN を false にするだけ（ログインの画面と処理は消していません）
+      //   ・省いている間も、URLの末尾に ?login=1 を付けるとログインから確かめられる
+      //   ・?grade=3 のように付けると、その学年で始まる（既定は1年。0＝答えない、5＝大学院生）
+      const SKIP_LOGIN = true;
+      const URLQ = new URLSearchParams(window.location.search);
+      const START_GRADE = URLQ.has("grade") ? Number(URLQ.get("grade")) : 1;
+      const [stage, setStage] = useState(SKIP_LOGIN && URLQ.get("login") !== "1" ? "app" : "gate");          // gate → onboard → app
+      const [me, setMe] = useState({ faculty: "", grade: START_GRADE, anonDefault: true });
       const [posts, setPosts] = useState(() => makeInitialPosts());
       const [kakomon, setKakomon] = useState(() => makeInitialKakomon());
       const [notices, setNotices] = useState(() => makeInitialNotices());
