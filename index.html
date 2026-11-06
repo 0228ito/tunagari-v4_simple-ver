@@ -646,7 +646,7 @@
         { when: "5月4週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "初めてのレポート、どうやって書き始めた？", aim: "レポート・メールの作法（商大WSの神情報）" },
         { when: "6月2週", kind: "知恵", cat: "暮らし・通学", to: "だれでも", title: "一人暮らしで、買ってよかったもの・いらなかったもの", aim: "暮らしのハック（北大きづき様）" },
         { when: "6月4週", kind: "息抜き", cat: "その他", to: "だれでも", title: "学食の推しメニューを教えて！", aim: "息抜き" },
-        { when: "7月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "前期テスト、過去問がない授業はどう対策した？", aim: "前期テスト前。過去問ライブラリへの共有も呼びかける" },
+        { when: "7月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "前期テスト、資料が少ない授業はどう対策した？", aim: "前期テスト前。先輩の知恵ノートへの共有も呼びかける" },
         { when: "8月1週", kind: "知恵", cat: "就活・インターン", to: "3年生以上", title: "夏休み、1・2年のうちにやっておいてよかったことは？", aim: "インターン・ガクチカ（商大WS：2年の関門）" }
       ],
       "後期": [
@@ -656,12 +656,26 @@
         { when: "11月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "1年の後期、期末テストまでにやっておけばよかったことは？", aim: "期末の2か月前。1年の「単位を落とす恐怖」（商大WS）" },
         { when: "12月1週", kind: "知恵", cat: "暮らし・通学", to: "2年生以上", title: `${U.winter}、これがあって助かった！という物は？`, aim: "初めての冬を迎える1年生向け" },
         { when: "12月3週", kind: "知恵", cat: "ゼミ・研究室", to: "3年生以上", title: "ゼミ・研究室選び、1年のうちに見ておけばよかったことは？", aim: "ゼミ選びが「ギャンブル」になっている（商大WS）" },
-        { when: "1月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "期末テスト直前、ギリギリで効いた勉強法は？", aim: "期末直前。過去問ライブラリへの共有も呼びかける" },
+        { when: "1月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "期末テスト直前、ギリギリで効いた勉強法は？", aim: "期末直前。先輩の知恵ノートへの共有も呼びかける" },
         { when: "2月1週", kind: "知恵", cat: "就活・インターン", to: "3年生以上", title: "春休み、1・2年のうちにやっておいてよかったことは？", aim: "長期休みの使い方" },
         { when: "2月3週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "新入生に伝えたい「入学前にやっておくといいこと」は？", aim: "3/8リリース時の初期回答づくり（WBS 3.5）。既存ユーザーに答えてもらう" },
         { when: "3月2週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "新入生へ：最初の1か月で困ったことと、その乗り越え方", aim: "合格発表直後。新入生が最初に読む回答を集める" }
       ]
     };
+
+    function makeSeedPosts() {
+      const now = Date.now();
+      const q = (id, category, title, content, extra = {}) => ({ id, category, author: OFFICIAL, askTo: "senpai", title, content, at: now - (id % 7) * 60 * MIN, views: 0, watchers: 0, watched: false, comments: [], seed: true, ...extra });
+      const list = [
+        q(901, "授業・テスト", "期末テストの対策、先輩はどうしていましたか？", "新入生がよく聞く質問です。先輩の経験をペタってください。"),
+        q(902, "授業・テスト", `【${U.courseA}】のテストはどんな形式ですか？`, "新入生がよく聞く質問です。", { course: U.courseA }),
+        q(903, "履修・楽単", "後期の履修、何を基準に選びましたか？", "新入生がよく聞く質問です。"),
+        q(904, "暮らし・通学", `${U.winter}、どんな装備で行っていますか？`, "新入生がよく聞く質問です。"),
+        q(905, "生活ハック", "1年のうちにやっておくといいことは？", "新入生がよく聞く質問です。"),
+        ...makeOdai(now).filter(p => p.odai.current).map(p => ({ ...p, comments: [], views: 0, watchers: 0 }))
+      ];
+      return list.map(p => ({ joiners: [], hidden: false, closed: false, ...p }));
+    }
 
     function makeOdai(now) {
       const D = 24 * 60 * MIN;
@@ -1980,7 +1994,7 @@
                   : <span className="text-[11.5px] font-black text-sub flex items-center gap-0.5 flex-shrink-0 border border-line rounded-full px-2 py-1"><Icon n="confirmation_number" size={14} />1枚</span>}
               </button>
             ))}
-            {list0.length === 0 && <EmptyState icon="description" text="この授業の知恵はまだありません" />}
+            {list0.length === 0 && <EmptyState icon="description" text={courseFilter ? "この授業の知恵はまだありません" : (onCreate ? "まだ知恵はありません。右下の「知恵を残す」から最初の1件をどうぞ" : "まだ知恵はありません。下の「投稿」から最初の1件をどうぞ")} />}
           </div>
           
           <p className="text-[11.5px] text-mute px-1 leading-relaxed">※ 試験問題そのものや、先生が共有を禁止しているものは載せられません。保存・転載はできません。</p>
@@ -2283,7 +2297,7 @@
       ] }
     ];
 
-    function MenuPage({ me, termMode, setTermMode, notif, setNotif, onClose, onEditProfile, onLogout }) {
+    function MenuPage({ firstDay, me, termMode, setTermMode, notif, setNotif, onClose, onEditProfile, onLogout }) {
       useScrollLock();
       const [sub, setSub] = useState(null);
       const bodyRef = useRef(null);
@@ -2322,6 +2336,17 @@
                     <p className="text-[11.5px] text-mute">ふだんは自動。デモで前期の見え方を確かめるときに切り替えてください</p>
                   </div>
                   <Row icon="notifications" label="通知設定" onClick={() => openSub("notif")} />
+                </Group>
+                <Group title="プロトタイプの確認用">
+                  <div className="px-4 py-3.5 space-y-2">
+                    <span className="flex items-center gap-3"><Icon n="rocket_launch" size={22} className="text-brand-deep" /><span className="text-[14px] font-bold flex-1">表示するデータ</span></span>
+                    <Segmented value={firstDay ? "first" : "usual"} onChange={(v) => {
+                      const u = new URL(window.location.href);
+                      if (v === "first") u.searchParams.set("empty", "1"); else u.searchParams.delete("empty");
+                      window.location.href = u.toString();
+                    }} options={[{ value: "usual", label: "ふだん" }, { value: "first", label: "リリース初日" }]} />
+                    <p className="text-[11.5px] text-mute">リリース初日は、運営の初期質問と今週のお題だけの状態です（先輩のペタ・知恵・募集・お知らせは0件）。切り替えると最初から読み込み直します</p>
+                  </div>
                 </Group>
                 <Group title="サポート">
                   <Row icon="rule" label="ガイドライン" onClick={() => openSub("guide")} />
@@ -3148,12 +3173,15 @@
       //   ・?grade=3 のように付けると、その学年で始まる（既定は1年。0＝答えない、5＝大学院生）
       const SKIP_LOGIN = true;
       const URLQ = new URLSearchParams(window.location.search);
+      // 🔧 リリース初日の見た目（運営の初期質問と今週のお題だけ。知恵・募集・お知らせは0件）
+      //   ・メニュー（≡）→「表示するデータ」で切り替え。URL末尾の ?empty=1 と同じ
+      const EMPTY_DEMO = URLQ.get("empty") === "1";
       const START_GRADE = URLQ.has("grade") ? Number(URLQ.get("grade")) : 1;
       const [stage, setStage] = useState(SKIP_LOGIN && URLQ.get("login") !== "1" ? "app" : "gate");          // gate → onboard → app
       const [me, setMe] = useState({ faculty: "", grade: START_GRADE, anonDefault: true });
-      const [posts, setPosts] = useState(() => makeInitialPosts());
-      const [kakomon, setKakomon] = useState(() => makeInitialKakomon());
-      const [notices, setNotices] = useState(() => makeInitialNotices());
+      const [posts, setPosts] = useState(() => EMPTY_DEMO ? makeSeedPosts() : makeInitialPosts());
+      const [kakomon, setKakomon] = useState(() => EMPTY_DEMO ? [] : makeInitialKakomon());
+      const [notices, setNotices] = useState(() => EMPTY_DEMO ? [] : makeInitialNotices());
       const [tickets, setTickets] = useState(START_TICKETS);
       const [tab, setTab] = useState("home");
       const [scope, setScope] = useState("forYou");         // forYou | all
@@ -3176,7 +3204,7 @@
       const [ticketIntro, setTicketIntro] = useState(false);       // シンプル版：チケットの説明は初めて回答したときだけ
       const ticketIntroSeen = useRef(false);
       // マージした既存機能
-      const [events, setEvents] = useState(() => makeInitialEvents());
+      const [events, setEvents] = useState(() => EMPTY_DEMO ? [] : makeInitialEvents());
       const [promos] = useState(() => makePromos());
       const [eventsOpen, setEventsOpen] = useState(false);
       const [odaiListOpen, setOdaiListOpen] = useState(false);
@@ -3418,15 +3446,31 @@
       const waitH = waitTop.map((p, i) => i === 0 ? { ...p, __answerHead: true } : p);
       // 1年生：まず「答えが付いている質問」で価値を見せる（回答待ちは3件目の後）。上級生：回答待ちを先頭に
       const pinnedQ = pinMine(qPosts, p => p.author.mine, p => p.at, p => p.bestAnswerId || p.closed);
-      const homeFeed0 = (me.grade <= 1 ? [...restH.slice(0, 3), ...waitH, ...restH.slice(3)] : [...waitH, ...restH]).filter(p => !pinnedQ.some(x => x.id === p.id));
+      // リリース初日など、ペタが付いた質問がまだ1件もないとき：全部を「ペタ募集中」にまとめ、今週のお題は一覧の一番上に置く
+      const noPetaYet = !qPosts.some(p => p.comments.length > 0);
+      const allWaitH = waiting.filter(p => scope === "all" || isForMe(p)).map((p, i) => i === 0 ? { ...p, __answerHead: true } : p);
+      const homeFeed0 = (noPetaYet ? allWaitH : me.grade <= 1 ? [...restH.slice(0, 3), ...waitH, ...restH.slice(3)] : [...waitH, ...restH]).filter(p => !pinnedQ.some(x => x.id === p.id));
       // 「後輩がペタを待っています」の続きに解決済みが混ざって見えないよう、回答待ちの後ろに区切りの見出しを入れる
-      const lastWait = homeFeed0.map(p => waitTop.some(w => w.id === p.id)).lastIndexOf(true);
+      const lastWait = noPetaYet ? -1 : homeFeed0.map(p => waitTop.some(w => w.id === p.id)).lastIndexOf(true);
       const homeFeed = homeFeed0.map((p, i) => lastWait >= 0 && i === lastWait + 1 ? { ...p, __afterWait: true } : p);
-      const odaiSlot = Math.min(homeFeed.length - 1, me.grade <= 1 ? 1 : waitTop.length + 1);
+      const odaiSlot = noPetaYet ? -1 : Math.min(homeFeed.length - 1, me.grade <= 1 ? 1 : waitTop.length + 1);   // -1＝一覧の一番上
       const openGathers = events.filter(e => !e.closed);
       // v3：いまの空気が分かる数字（集まったペタの合計と今週の増え方）
       const petaTotal = visiblePosts.reduce((n, p) => n + p.comments.length, 0);
       const petaWeek = visiblePosts.reduce((n, p) => n + p.comments.filter(c => (c.at || 0) > Date.now() - 7 * 24 * 60 * MIN).length, 0);
+      // ③ 今週のお題のカード（ふだんは一覧の途中に1枚、ペタがまだないときは一番上）
+      const odaiCard = (<>
+                          {odaiNow && (
+                            <button onClick={() => openPost(odaiNow.id)} className="relative overflow-hidden w-full text-left text-on-brand rounded-3xl p-4 shadow-lift space-y-1.5 press"
+                              style={{ background: "radial-gradient(rgb(255 255 255 / .14) 1px, transparent 1px) 0 0 / 14px 14px, linear-gradient(135deg, rgb(53 181 151), rgb(31 140 160) 60%, rgb(132 85 224))" }}>
+                              <img src={LOGO_MARK} alt="" aria-hidden="true" className="absolute -right-3 -bottom-4 w-24 h-24 opacity-25 animate-floaty pointer-events-none" />
+                              <span className="font-head font-black text-[13px] flex items-center gap-1"><Icon n="campaign" fill size={17} />今週のお題<span className="ml-auto text-[11px] font-bold opacity-90">{odaiNow.comments.length}ペタ</span></span>
+                              <p className="font-head font-black text-[15.5px] leading-snug">{odaiNow.title}</p>
+                              {odaiNow.comments.some(c => c.user.mine) && <p className="text-[12px] font-bold opacity-95">ペタ済み</p>}
+                            </button>
+                          )}
+                          {odaiNow && <button onClick={() => setOdaiListOpen(true)} className="-mt-1.5 text-[12px] font-bold text-brand-deep flex items-center press px-1">これまでのお題<Icon n="chevron_right" size={16} /></button>}
+      </>);
 
       // ------------------------------------------------------------
       // 📜 画面が切り替わったらスクロール位置を先頭に戻す
@@ -3563,23 +3607,14 @@
                           ))}
                         </div>
                       </div>
+                      {odaiSlot === -1 && odaiCard}
                       {pinnedQ.length > 0 && <MyPinned label="ペタが届くとお知らせします">{pinnedQ.map(p => <QuestionRow key={p.id} post={p} showTop unread={unreadPostIds.has(p.id)} onOpen={() => openPost(p.id)} onWatch={toggleWatch} />)}</MyPinned>}
                       {homeFeed.map((p, i) => (
                         <React.Fragment key={p.id}>
                           {p.__answerHead && <p id="waiting" className="text-[12px] font-black text-brand-deep flex items-center gap-1 px-1 pt-1 scroll-mt-20"><Icon n="forum" size={15} />{me.grade === 1 ? "ペタ募集中" : `後輩がペタを待っています`}</p>}
                           {p.__afterWait && <p className="text-[12px] font-black text-sub flex items-center gap-1 px-1 pt-2"><Icon n="forum" size={15} />ほかの質問</p>}
                           <QuestionRow post={p} showTop delay={Math.min(i, 6) * 60} unread={unreadPostIds.has(p.id)} onOpen={() => openPost(p.id)} onWatch={toggleWatch} />
-                          {/* ③ 今週のお題は一覧の途中に1枚だけ */}
-                          {i === odaiSlot && odaiNow && (
-                            <button onClick={() => openPost(odaiNow.id)} className="relative overflow-hidden w-full text-left text-on-brand rounded-3xl p-4 shadow-lift space-y-1.5 press"
-                              style={{ background: "radial-gradient(rgb(255 255 255 / .14) 1px, transparent 1px) 0 0 / 14px 14px, linear-gradient(135deg, rgb(53 181 151), rgb(31 140 160) 60%, rgb(132 85 224))" }}>
-                              <img src={LOGO_MARK} alt="" aria-hidden="true" className="absolute -right-3 -bottom-4 w-24 h-24 opacity-25 animate-floaty pointer-events-none" />
-                              <span className="font-head font-black text-[13px] flex items-center gap-1"><Icon n="campaign" fill size={17} />今週のお題<span className="ml-auto text-[11px] font-bold opacity-90">{odaiNow.comments.length}ペタ</span></span>
-                              <p className="font-head font-black text-[15.5px] leading-snug">{odaiNow.title}</p>
-                              {odaiNow.comments.some(c => c.user.mine) && <p className="text-[12px] font-bold opacity-95">ペタ済み</p>}
-                            </button>
-                          )}
-                          {i === odaiSlot && odaiNow && <button onClick={() => setOdaiListOpen(true)} className="-mt-1.5 text-[12px] font-bold text-brand-deep flex items-center press px-1">これまでのお題<Icon n="chevron_right" size={16} /></button>}
+                          {i === odaiSlot && odaiCard}
                         </React.Fragment>
                       ))}
                       {homeFeed.length === 0 && <EmptyState text="まだ質問がありません" action="最初の質問をする" onAction={() => setAsk({})} />}
@@ -3689,7 +3724,7 @@
           {eventCreate && <EventCreateSheet myLabel={displayName({ fac: facShort(me.faculty), grade: me.grade, anon: true })} onClose={() => setEventCreate(false)} onSubmit={createEvent} />}
           {userCard && <AnswererCard user={userCard} stats={userCard.mine ? myStats : (userCard.stats || null)} onClose={() => setUserCard(null)} />}
           {menuOpen && (
-            <MenuPage me={me} termMode={termMode} setTermMode={setTermMode} notif={notif} setNotif={setNotif}
+            <MenuPage firstDay={EMPTY_DEMO} me={me} termMode={termMode} setTermMode={setTermMode} notif={notif} setNotif={setNotif}
               onClose={() => setMenuOpen(false)} onEditProfile={() => setProfileOpen(true)}
               onLogout={() => { setMenuOpen(false); setStage("gate"); setTab("home"); }} />
           )}
