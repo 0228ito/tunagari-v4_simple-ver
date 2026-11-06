@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  TUNAGARI MVPプロトタイプ＋既存機能マージ版・シンプルホーム v3（2026/11/05）
+  TUNAGARI MVPプロトタイプ＋既存機能マージ版・シンプルホーム v3（2026/11/06。過去問→先輩の知恵、閲覧チケットは非表示）
   ・v2（文字を減らした版）に、話題の色・数字・小さな動き・助かった！ランキングを足した版です。文字は増やしていません。
   ・261029_mvp に、既存サービスの イベント／プロモーション／ペタ／つながる をマージしたものです。
   ・既定は北海道大学。URL末尾に ?univ=otaru で小樽商科大学版。
@@ -347,7 +347,7 @@
     // ============================================================
     const CATEGORIES = [
       { key: "運営のお題",     icon: "campaign",     short: "お題",         grades: [1, 2, 3, 4, 5] },
-      { key: "授業・過去問",   icon: "school",       short: "授業・過去問", grades: [1, 2, 3] },
+      { key: "授業・テスト",   icon: "school",       short: "授業・テスト", grades: [1, 2, 3] },
       { key: "履修・楽単",     icon: "event_note",   short: "履修・楽単",   grades: [1, 2] },
       { key: "ゼミ・研究室",   icon: "groups",       short: "ゼミ",         grades: [2, 3] },
       { key: "就活・インターン", icon: "work",       short: "就活",         grades: [2, 3, 4] },
@@ -368,10 +368,10 @@
     const autoTerm = () => { const m = new Date().getMonth() + 1; return (m >= 4 && m <= 9) ? "前期" : "後期"; };
     const TERM_META = {
       "前期": { icon: "local_florist", tint: "前期", topics: [
-        { label: "履修登録", q: "履修", icon: "event_note" }, { label: "新歓・サークル", cat: "新歓・サークル" }, { label: "一人暮らし", q: "一人暮らし", icon: "home" }, { label: "レポートの書き方", q: "レポート", icon: "edit_note" }, { label: "前期テスト・過去問", cat: "授業・過去問" }
+        { label: "履修登録", q: "履修", icon: "event_note" }, { label: "新歓・サークル", cat: "新歓・サークル" }, { label: "一人暮らし", q: "一人暮らし", icon: "home" }, { label: "レポートの書き方", q: "レポート", icon: "edit_note" }, { label: "前期テスト対策", cat: "授業・テスト" }
       ] },
       "後期": { icon: "ac_unit", tint: "後期", topics: [
-        { label: "期末テスト・過去問", cat: "授業・過去問" }, { label: "後期の履修", q: "履修", icon: "event_note" }, { label: "冬の通学", q: "通学", icon: "ac_unit" }, { label: "ゼミ選び", cat: "ゼミ・研究室" }, { label: "インターン", cat: "就活・インターン" }
+        { label: "期末テスト対策", cat: "授業・テスト" }, { label: "後期の履修", q: "履修", icon: "event_note" }, { label: "冬の通学", q: "通学", icon: "ac_unit" }, { label: "ゼミ選び", cat: "ゼミ・研究室" }, { label: "インターン", cat: "就活・インターン" }
       ] }
     };
 
@@ -380,12 +380,15 @@
     //   ・お金やポイント交換ではなく「アプリ内の情報アクセス権」と引き換え（MVPでポイント交換は扱わない）
     // ============================================================
     const TICKET_RULES = { answer: 1, best: 2, share: 3 };
+    // 🔧 閲覧チケットは「まずは入れない」（11/5決定）。画面には出さず、行動ごとに得るはずだった枚数だけ中で数え続ける
+    //   ・今後の開発で戻すときは TICKETS_ENABLED を true にする（表示・チケットで読む仕組みが戻る）
+    const TICKETS_ENABLED = false;
     const START_TICKETS = 1;
     const SUMMARY_MIN_ANSWERS = 5;   // 回答がこの件数以上でAI要約を表示（本番の件数は1.4で決める）
     const DEMO_REPLY_MS = 6000;      // 質問を投稿してから、デモの回答が届くまで
     const DEMO_THANKS_MS = 5000;     // 回答してから、デモの「助かった！」が届くまで
 
-    const REPORT_REASONS = ["誹謗中傷・個人が特定できる内容", "虚偽・誤った情報", "広告・宣伝・勧誘", "過去問の共有が禁止されている授業のもの", "その他"];
+    const REPORT_REASONS = ["誹謗中傷・個人が特定できる内容", "虚偽・誤った情報", "広告・宣伝・勧誘", "先生が共有を禁止している内容", "その他"];
 
     const ASK_TO = [
       { v: "senpai", label: "先輩に", icon: "school" },
@@ -533,13 +536,13 @@
       const now = Date.now();
       const list = [
         {
-          id: 1, category: "授業・過去問", author: usr(P(0), 1, true), askTo: "senpai", course: U.courseA,
+          id: 1, category: "授業・テスト", author: usr(P(0), 1, true), askTo: "senpai", course: U.courseA,
           title: `【${U.courseA}】のテストの難しさを教えてください`,
           content: "後期から履修しています。中間がなく期末一発だと聞いて不安です。どれくらい勉強すれば大丈夫そうですか？",
           at: now - 120 * MIN, views: 210, watchers: 14, watched: false,
           comments: [
             ans(usr(P(1), 2), "毎年、計算問題が大問3つの形式でした。授業の演習問題を解き直せば大丈夫だと思います。", 80, 9),
-            ans(usr(P(2), 3, true), `過去問ライブラリに2025年度の期末が上がっていました。形式をつかむのにおすすめです。`, 45, 4)
+            ans(usr(P(2), 3, true), `知恵ノートに2025年度の期末の対策メモが上がっていました。形式をつかむのにおすすめです。`, 45, 4)
           ]
         },
         {
@@ -643,17 +646,17 @@
         { when: "5月4週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "初めてのレポート、どうやって書き始めた？", aim: "レポート・メールの作法（商大WSの神情報）" },
         { when: "6月2週", kind: "知恵", cat: "暮らし・通学", to: "だれでも", title: "一人暮らしで、買ってよかったもの・いらなかったもの", aim: "暮らしのハック（北大きづき様）" },
         { when: "6月4週", kind: "息抜き", cat: "その他", to: "だれでも", title: "学食の推しメニューを教えて！", aim: "息抜き" },
-        { when: "7月2週", kind: "知恵", cat: "授業・過去問", to: "2年生以上", title: "前期テスト、過去問がない授業はどう対策した？", aim: "前期テスト前。過去問ライブラリへの共有も呼びかける" },
+        { when: "7月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "前期テスト、過去問がない授業はどう対策した？", aim: "前期テスト前。過去問ライブラリへの共有も呼びかける" },
         { when: "8月1週", kind: "知恵", cat: "就活・インターン", to: "3年生以上", title: "夏休み、1・2年のうちにやっておいてよかったことは？", aim: "インターン・ガクチカ（商大WS：2年の関門）" }
       ],
       "後期": [
         { when: "10月1週", kind: "知恵", cat: "履修・楽単", to: "2年生以上", title: "後期の履修、前期の反省をどう生かした？", aim: "後期は履修のガイダンスが薄く混乱しやすい（商大WS）" },
         { when: "10月3週", kind: "息抜き", cat: "その他", to: "だれでも", title: "秋の通学路で聴きたい1曲は？", aim: "息抜き（既存ペタり場の人気テーマ）" },
         { when: "11月1週", kind: "息抜き", cat: "暮らし・通学", to: "だれでも", title: "手軽に温まる冬の最強自炊！みんなの家で絶対に外せない「推し鍋スープ＆具材」は？", aim: "息抜き（既存ペタり場のテーマ）" },
-        { when: "11月2週", kind: "知恵", cat: "授業・過去問", to: "2年生以上", title: "1年の後期、期末テストまでにやっておけばよかったことは？", aim: "期末の2か月前。1年の「単位を落とす恐怖」（商大WS）" },
+        { when: "11月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "1年の後期、期末テストまでにやっておけばよかったことは？", aim: "期末の2か月前。1年の「単位を落とす恐怖」（商大WS）" },
         { when: "12月1週", kind: "知恵", cat: "暮らし・通学", to: "2年生以上", title: `${U.winter}、これがあって助かった！という物は？`, aim: "初めての冬を迎える1年生向け" },
         { when: "12月3週", kind: "知恵", cat: "ゼミ・研究室", to: "3年生以上", title: "ゼミ・研究室選び、1年のうちに見ておけばよかったことは？", aim: "ゼミ選びが「ギャンブル」になっている（商大WS）" },
-        { when: "1月2週", kind: "知恵", cat: "授業・過去問", to: "2年生以上", title: "期末テスト直前、ギリギリで効いた勉強法は？", aim: "期末直前。過去問ライブラリへの共有も呼びかける" },
+        { when: "1月2週", kind: "知恵", cat: "授業・テスト", to: "2年生以上", title: "期末テスト直前、ギリギリで効いた勉強法は？", aim: "期末直前。過去問ライブラリへの共有も呼びかける" },
         { when: "2月1週", kind: "知恵", cat: "就活・インターン", to: "3年生以上", title: "春休み、1・2年のうちにやっておいてよかったことは？", aim: "長期休みの使い方" },
         { when: "2月3週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "新入生に伝えたい「入学前にやっておくといいこと」は？", aim: "3/8リリース時の初期回答づくり（WBS 3.5）。既存ユーザーに答えてもらう" },
         { when: "3月2週", kind: "知恵", cat: "生活ハック", to: "2年生以上", title: "新入生へ：最初の1か月で困ったことと、その乗り越え方", aim: "合格発表直後。新入生が最初に読む回答を集める" }
@@ -666,7 +669,7 @@
       return [
         // 今週のお題（後期）：知恵系
         {
-          ...base(), id: 104, odai: { term: "後期", kind: "知恵", cat: "授業・過去問", to: "2年生以上", current: true, until: "2026/11/15" },
+          ...base(), id: 104, odai: { term: "後期", kind: "知恵", cat: "授業・テスト", to: "2年生以上", current: true, until: "2026/11/15" },
           title: "1年の後期、期末テストまでにやっておけばよかったことは？",
           content: "先輩のみなさん、1年生に経験を教えてください。1年生は読むだけでもOK、気になることはペタってください。",
           at: now - 1 * D, views: 380, watchers: 31,
@@ -731,24 +734,24 @@
       ];
     }
 
-    // 📚 過去問ライブラリ（サンプル）
+    // 💡 先輩の知恵ノート（サンプル）
     function makeInitialKakomon() {
       return [
-        { id: "k1", course: U.courseA, title: "2025年度 期末試験", kind: "過去問", by: usr(P(1), 2), thanks: 48, views: 260, unlocked: false,
-          lines: U.examA,
-          memo: "問3の形式は3年連続で同じでした。授業の演習問題が近いです。" },
-        { id: "k2", course: U.courseA, title: "出題傾向メモ（3年分）", kind: "傾向メモ", by: usr(P(2), 3, true), thanks: 31, views: 180, unlocked: false,
-          lines: ["・大問は毎年3つ、配点は20/30/50", "・持ち込み不可", "・最後の授業で扱った例題がそのまま出たことあり"],
+        { id: "k1", course: U.courseA, title: "期末テストの対策メモ（2025年度）", kind: "対策メモ", by: usr(P(1), 2), thanks: 48, views: 260, unlocked: false,
+          lines: ["・計算問題が中心。授業の演習プリントを2周するのが一番効いた", "・行列の階数と固有値は、毎回ノートで手順を書き出して練習", "・時間が足りなくなりやすいので、解く順番を先に決めておく"],
+          memo: "授業の演習問題が近いです。最後の授業は必ず出席がおすすめ。" },
+        { id: "k2", course: U.courseA, title: "3年分のテストの傾向まとめ", kind: "対策メモ", by: usr(P(2), 3, true), thanks: 31, views: 180, unlocked: false,
+          lines: ["・大問は毎年3つ、計算と説明がまざる", "・持ち込み不可", "・最後の授業で扱った例題に近い問題が出たことあり"],
           memo: "最終回の授業は必ず出席がおすすめです。" },
-        { id: "k3", course: U.courseB, title: "2025年度 前期 小テストまとめ", kind: "過去問", by: usr(P(3), 2), thanks: 22, views: 120, unlocked: false,
-          lines: U.examB,
+        { id: "k3", course: U.courseB, title: "小テストの復習のコツ（2025年度前期）", kind: "授業のコツ", by: usr(P(3), 2), thanks: 22, views: 120, unlocked: false,
+          lines: ["・毎回のスライドの太字が小テストに出やすい", "・用語は自分の言葉で説明できるようにしておく", "・図で覚える回（記憶のモデルなど）は描けるように"],
           memo: "用語の定義を正確に書けば部分点がもらえます。" },
-        { id: "k4", course: U.courseC, title: "2024年度 期末試験", kind: "過去問", by: usr(P(4), 3, true), thanks: 17, views: 95, unlocked: false,
-          lines: U.examC,
-          memo: "問2は毎年、数字だけ変わります。" },
-        { id: "k5", course: U.courseD, title: "期末リスニングの傾向", kind: "傾向メモ", by: usr(P(5), 2), thanks: 9, views: 60, unlocked: true,
+        { id: "k4", course: U.courseC, title: "期末に向けた勉強の順番（2024年度）", kind: "対策メモ", by: usr(P(4), 3, true), thanks: 17, views: 95, unlocked: false,
+          lines: ["・まず信頼区間の考え方をノートで整理", "・次に検定の手順を例題で3回なぞる", "・電卓の使い方に慣れておく"],
+          memo: "計算は電卓必須でした。" },
+        { id: "k5", course: U.courseD, title: "期末リスニングの傾向", kind: "対策メモ", by: usr(P(5), 2), thanks: 9, views: 60, unlocked: true,
           lines: ["・教科書のUnit5〜8から出題", "・会話文2本＋講義1本", "・解答はマークシート"],
-          memo: "（はじめから見られるサンプルです）" }
+          memo: "シャドーイングを毎日5分続けると楽になりました。" }
       ];
     }
 
@@ -757,7 +760,7 @@
       return [
         { id: "n1", postId: 9, kind: "answer", title: "レポートの参考文献の書き方、みんな何を…", preview: "先生によって形式の指定があるので、まずシラバスを確認するのが確実です。", at: now - 30 * MIN, read: false },
         { id: "n2", postId: 3, kind: "summary", title: "テスト前の勉強、みんなどうやって計画…", preview: "ペタが集まったので、AIが要点をまとめました", at: now - 5 * 60 * MIN, read: false },
-        { id: "n3", kind: "ticket", title: "閲覧チケットをプレゼント", preview: `はじめての登録で${START_TICKETS}枚。過去問を1件見られます`, at: now - 26 * 60 * MIN, read: true }
+        ...(TICKETS_ENABLED ? [{ id: "n3", kind: "ticket", title: "閲覧チケットをプレゼント", preview: `はじめての登録で${START_TICKETS}枚。先輩の知恵を1件見られます`, at: now - 26 * 60 * MIN, read: true }] : [])
       ];
     }
     const NOTICE_KINDS = {
@@ -776,7 +779,7 @@
     const DOC_GUIDE = [
       ["お互いを思いやる", "同じ大学の仲間どうしの場です。やさしい言葉づかいを心がけましょう。"],
       ["個人を特定しない", "名前・顔写真・連絡先など、個人が特定できる情報は書かないでください。先生への悪口・名指しの評価もNGです。"],
-      ["過去問のルール", "先生が配布・共有を禁止しているものは載せないでください。閲覧はアプリ内だけで、保存・転載はできません。"],
+      ["知恵を残すときのルール", "先生が配布・共有を禁止しているもの（試験問題そのものなど）は載せないでください。閲覧はアプリ内だけで、保存・転載はできません。"],
       ["仲間・イベントのルール", "日時・場所を決めた集まりは主催者名の表示が必要です。連絡先の交換は、会ってから・お互いが納得してからにしましょう。勧誘・宣伝目的の募集は削除します。"],
       ["体調のことは専門家へ", "ペタは参考情報です。つらいときは医療機関や保健センターに相談してください。"],
       ["困ったら通報", "不適切な質問・ペタは「通報」から知らせてください。運営が確認して非表示にします。"]
@@ -822,7 +825,7 @@
     }
 
     // v3：話題ごとの色（ライト・ダークどちらでも読める濃さ）。文字は増やさず、色で見分けられるように
-    const CAT_COLOR = { "授業・過去問": "61 109 224", "履修・楽単": "217 119 43", "ゼミ・研究室": "132 85 224", "就活・インターン": "31 158 138", "生活ハック": "185 133 0", "新歓・サークル": "217 70 140", "暮らし・通学": "42 143 208", "仲間募集": "132 85 224", "運営のお題": "53 181 151", "その他": "110 118 118" };
+    const CAT_COLOR = { "授業・テスト": "61 109 224", "履修・楽単": "217 119 43", "ゼミ・研究室": "132 85 224", "就活・インターン": "31 158 138", "生活ハック": "185 133 0", "新歓・サークル": "217 70 140", "暮らし・通学": "42 143 208", "仲間募集": "132 85 224", "運営のお題": "53 181 151", "その他": "110 118 118" };
     const catRGB = (k) => CAT_COLOR[k] || CAT_COLOR["その他"];
     function CategoryChip({ cat }) {
       const m = catMeta(cat); const c = catRGB(cat);
@@ -870,6 +873,16 @@
             <p className="text-[11.5px] text-mute flex items-start gap-1 leading-relaxed"><Icon n="lock" size={14} className="mt-px flex-shrink-0" />ほかのペタの一覧や名前、閲覧チケットの枚数は表示されません</p>
           </div>
         </Sheet>
+      );
+    }
+
+    // 右下に浮く「作る」ボタン（チャット型：下部ナビに「＋投稿」がないため、各画面から作る）
+    function Fab({ label, icon = "add", onClick }) {
+      return (
+        <button onClick={onClick} aria-label={label} className="fixed z-[26] rounded-full text-on-brand shadow-lift press flex items-center gap-1 pl-4 pr-5 h-14 font-black text-[14px]"
+          style={{ right: "max(1rem, calc((100vw - 28rem) / 2 + 1rem))", bottom: "calc(max(0.75rem, env(safe-area-inset-bottom)) + 84px)", background: "linear-gradient(135deg, rgb(53 181 151), rgb(31 140 160))" }}>
+          <Icon n={icon} size={24} />{label}
+        </button>
       );
     }
 
@@ -995,7 +1008,7 @@
       const same = n ? dict.find(c => c.norm === n) : null;          // 表記だけちがう同じ授業
       const done = same && same.name === v;                            // 登録済みの名前どおり
       const list = done ? [] : matchCourses(dict, v).filter(c => c !== same);
-      const meta = (c) => [c.q ? `質問${c.q}` : "", c.k ? `過去問${c.k}` : ""].filter(Boolean).join("・");
+      const meta = (c) => [c.q ? `質問${c.q}` : "", c.k ? `知恵${c.k}` : ""].filter(Boolean).join("・");
       // 候補が画面の下に隠れないよう、入力中は欄を上の方へ寄せる
       const boxRef = useRef(null);
       const reveal = () => setTimeout(() => { if (boxRef.current) boxRef.current.scrollIntoView({ block: "start", behavior: "smooth" }); }, 50);
@@ -1031,7 +1044,7 @@
             </div>
           ) : !same && (
             <div className="text-[12px] text-sub bg-sunk rounded-2xl px-3 py-2 space-y-1.5">
-              <p className="flex items-start gap-1"><Icon n="info" size={15} className="mt-px flex-shrink-0" />まだだれも入れていない授業名です。シラバスどおりの正式な名前だと、ほかの人の質問や過去問とまとまりやすくなります。</p>
+              <p className="flex items-start gap-1"><Icon n="info" size={15} className="mt-px flex-shrink-0" />まだだれも入れていない授業名です。シラバスどおりの正式な名前だと、ほかの人の質問や先輩の知恵とまとまりやすくなります。</p>
               {newLabel && <button type="button" onClick={() => onPick(v)} className="font-bold text-brand-deep press">「{v}」{newLabel}</button>}
             </div>
           ))}
@@ -1368,7 +1381,7 @@
     //   ・旧：テンプレート7つから選ぶ形（選ぶ＝実質カテゴリ選びで、投稿メニューの形もそろっていなかった）
     // ============================================================
     const Q_SUGGEST = {
-      "授業・過去問": ["【授業名】のテストの難しさを教えてください", "【授業名】の過去問や出題傾向を知っている人いますか？", "【授業名】の課題の量や先生の雰囲気はどうですか？"],
+      "授業・テスト": ["【授業名】のテストの難しさを教えてください", "【授業名】のテストの傾向を知っている人いますか？", "【授業名】の課題の量や先生の雰囲気はどうですか？"],
       "履修・楽単": ["【曜日・時限】で取れるおすすめの授業はありますか？", "レポートだけで評価される教養科目を知りたいです", "履修を決めるとき、何を基準に選びましたか？"],
       "ゼミ・研究室": ["【ゼミ名】の雰囲気や活動の頻度を知りたいです", "ゼミ・研究室選びで、見ておけばよかったことは？"],
       "就活・インターン": ["インターンはいつから準備しましたか？", "ガクチカはどうやって作りましたか？", "ESで気をつけたことを教えてください"],
@@ -1380,7 +1393,7 @@
     const Q_PLACEHOLDER = /【(授業名|曜日・時限|ゼミ名|テーマ|サークル名|聞きたいこと)】/;
     // 書いた文から話題を推測（本番はAIで判定する想定）
     const Q_GUESS = [
-      ["授業・過去問", /過去問|テスト|試験|授業|講義|課題|先生|教授|単位/],
+      ["授業・テスト", /過去問|テスト|試験|授業|講義|課題|先生|教授|単位/],
       ["履修・楽単", /履修|楽単|時間割|教養/],
       ["ゼミ・研究室", /ゼミ|研究室/],
       ["就活・インターン", /就活|インターン|ES|ガクチカ|企業/],
@@ -1389,12 +1402,12 @@
       ["生活ハック", /コツ|勉強法|メール|レポート|朝|起き/]
     ];
     const guessCategory = (t) => { const hit = Q_GUESS.find(([, re]) => re.test(t)); return hit ? hit[0] : ""; };
-    const Q_EXAMPLE = { "前期": "例：履修登録、みんな何を参考にした？", "後期": "例：期末テストの過去問、どこで手に入る？" };
+    const Q_EXAMPLE = { "前期": "例：履修登録、みんな何を参考にした？", "後期": "例：期末テスト、みんなどう対策してる？" };
 
     const StepNum = ({ n }) => <span className="w-[18px] h-[18px] rounded-full bg-brand text-on-brand text-[11px] font-black inline-flex items-center justify-center">{n}</span>;
 
     function AskSheet({ me, posts, courseDict = [], preset, context = "home", onClose, onSubmit, onJoin, onOpenPost, onCreateEvent, onShareKakomon }) {
-      const [mode, setMode] = useState(preset && (preset.cat || preset.text) ? "question" : "menu");
+      const [mode, setMode] = useState(preset && (preset.cat || preset.text || preset.direct) ? "question" : "menu");
       const [text, setText] = useState((preset && preset.text) || "");
       const [catManual, setCatManual] = useState((preset && preset.cat && preset.cat !== "運営のお題") ? preset.cat : "");
       const [askTo, setAskTo] = useState("senpai");
@@ -1411,7 +1424,7 @@
       const category = catManual || autoCat;
       const hasBlank = Q_PLACEHOLDER.test(title);
       const needsCourse = text.includes("【授業名】");                 // 例文の【授業名】を、候補から選んで埋める
-      const showCourse = needsCourse || category === "授業・過去問";   // 授業の質問は授業名を付けると過去問とつながる
+      const showCourse = needsCourse || category === "授業・テスト";   // 授業の質問は授業名を付けると先輩の知恵とつながる
       const pickCourse = (name) => {
         setCourse(name);
         if (needsCourse) setText(t => t.replace("【授業名】", name));
@@ -1448,8 +1461,8 @@
         );
         const q = (top) => row("q", "質問する", "help", { icon: "help", label: "先輩に質問する", sub: "書き方の例があります", onClick: () => setMode("question") }, top);
         const g = (top) => row("g", "人を集める", "diversity_3", { icon: "diversity_3", label: "仲間を募集・イベントを作る", sub: "勉強仲間・イベント", onClick: onCreateEvent }, top);
-        const w = (top) => row("w", "知恵を残す", "upload_file", { icon: "upload_file", label: "過去問・傾向メモを共有する", sub: `閲覧チケット+${TICKET_RULES.share}枚`, onClick: onShareKakomon }, top);
-        // 開いた画面に合う項目を一番上に（ホーム＝質問／過去問タブ＝共有／仲間・イベント＝募集・イベント）
+        const w = (top) => row("w", "知恵を残す", "lightbulb", { icon: "lightbulb", label: "知恵を残す", sub: "授業のコツ・対策メモ", onClick: onShareKakomon }, top);
+        // 開いた画面に合う項目を一番上に（ホーム＝質問／知恵タブ＝知恵を残す／仲間・イベント＝募集・イベント）
         const order = context === "kakomon" ? [w(true), q(false), g(false)] : context === "gather" ? [g(true), q(false), w(false)] : [q(true), g(false), w(false)];
         return (
           <Sheet onClose={onClose}>
@@ -1506,7 +1519,7 @@
             {/* 授業名（候補から選ぶと表記がそろう。例文の【授業名】もここで埋める） */}
             {showCourse && (
               <div className={cx(needsCourse && "bg-brand-tint/50 rounded-3xl p-3 -mx-1")}>
-                <label className={LABEL} htmlFor="ask-course">{needsCourse ? "【授業名】に入る授業" : "どの授業？（任意・同じ授業の過去問とつながります）"}</label>
+                <label className={LABEL} htmlFor="ask-course">{needsCourse ? "【授業名】に入る授業" : "どの授業？（任意・同じ授業の先輩の知恵とつながります）"}</label>
                 <CourseInput id="ask-course" dict={courseDict} inputRef={courseRef} value={course} onChange={setCourse} onPick={pickCourse}
                   placeholder={`授業名を入れる（例：${U.courseA}）`} newLabel={needsCourse ? "を入れる" : ""} />
                 {needsCourse && <p className="text-[11.5px] text-sub mt-1.5">候補から選ぶと、上の【授業名】に入ります</p>}
@@ -1662,10 +1675,10 @@
 
             {kCount > 0 && (
               <button onClick={() => onOpenKakomon(post.course)} className="w-full text-left bg-brand-tint rounded-3xl p-3.5 flex items-center gap-3 press">
-                <span className="w-10 h-10 rounded-2xl bg-surface text-brand-deep flex items-center justify-center flex-shrink-0"><Icon n="description" fill size={22} /></span>
+                <span className="w-10 h-10 rounded-2xl bg-surface text-brand-deep flex items-center justify-center flex-shrink-0"><Icon n="lightbulb" fill size={22} /></span>
                 <span className="flex-1 min-w-0">
-                  <span className="block font-black text-[14px] text-brand-deep">【{post.course}】の過去問 {kCount}件</span>
-                  <span className="block text-[12px] text-sub">閲覧チケットで見られます</span>
+                  <span className="block font-black text-[14px] text-brand-deep">【{post.course}】の先輩の知恵 {kCount}件</span>
+                  <span className="block text-[12px] text-sub">授業のコツ・対策メモ</span>
                 </span>
                 <Icon n="chevron_right" className="text-brand-deep" />
               </button>
@@ -1696,7 +1709,7 @@
               {mine && !solved && !recruit && post.comments.some(c => !c.user.mine) && (
                 <div className="bg-brand-tint rounded-2xl px-3.5 py-3 text-[12.5px] text-brand-deep font-bold flex items-start gap-2">
                   <Icon n="workspace_premium" fill size={18} className="flex-shrink-0" />
-                  <span>いちばん助かったペタを1つ選ぶと解決済みになり、ペタした人に閲覧チケット+{TICKET_RULES.best}枚が届きます</span>
+                  <span>いちばん助かったペタを1つ選ぶと解決済みになります{TICKETS_ENABLED ? `。ペタした人に閲覧チケット+${TICKET_RULES.best}枚が届きます` : "。ペタした人にお礼が届きます"}</span>
                 </div>
               )}
               {mine && recruit && !post.closed && post.comments.length > 0 && (
@@ -1766,7 +1779,7 @@
               {firstPeta && !recruit && <p className="text-[12px] bg-brand-tint text-brand-deep rounded-xl px-3 py-2 leading-relaxed"><b>ペタ＝回答。</b>気軽に本音をどうぞ</p>}
               <div className="flex items-center justify-between text-[12px]">
                 <span className={cx("font-bold flex items-center gap-1", anon ? "text-brand-deep" : "text-sub")}><Icon n="visibility_off" fill={anon} size={14} />{anon ? "匿名" : "学部・学年"}で送信：{displayName({ fac: facShort(me.faculty), grade: me.grade, anon })}</span>
-                {!answeredByMe && !recruit && <span className="font-black text-brand-deep flex items-center gap-0.5"><Icon n="confirmation_number" fill size={14} />ペタると閲覧チケット+{TICKET_RULES.answer}</span>}
+                {TICKETS_ENABLED && !answeredByMe && !recruit && <span className="font-black text-brand-deep flex items-center gap-0.5"><Icon n="confirmation_number" fill size={14} />ペタると閲覧チケット+{TICKET_RULES.answer}</span>}
               </div>
               <div className="flex gap-2 items-center">
                 <button onClick={() => setAnon(!anon)} aria-pressed={anon} aria-label="匿名で送る（学部は非表示）"
@@ -1889,7 +1902,7 @@
     }
 
     // ============================================================
-    // 📚 過去問ライブラリ（閲覧チケットで見る）
+    // 💡 先輩の知恵ノート（授業のコツ・対策メモ）。閲覧チケットは TICKETS_ENABLED が true のときだけ使う
     // ============================================================
     function TicketCard({ tickets, onEarn }) {
       return (
@@ -1902,42 +1915,43 @@
             </div>
             <Icon n="confirmation_number" fill size={52} className="opacity-90" />
           </div>
-          <p className="text-[11.5px] font-bold opacity-95">ペタる +{TICKET_RULES.answer}・いちばん助かった +{TICKET_RULES.best}・過去問を共有 +{TICKET_RULES.share}</p>
+          <p className="text-[11.5px] font-bold opacity-95">ペタる +{TICKET_RULES.answer}・いちばん助かった +{TICKET_RULES.best}・知恵を残す +{TICKET_RULES.share}</p>
           {onEarn && <button onClick={onEarn} className="w-full bg-white text-brand-deep font-black rounded-2xl py-2.5 text-[13.5px] press flex items-center justify-center gap-1"><Icon n="forum" size={18} />ペタってチケットを集める</button>}
         </div>
       );
     }
 
-    function KakomonTab({ items, tickets, courseFilter, setCourseFilter, onOpen, onEarn }) {
-      const courses = Array.from(new Set(items.map(k => k.course)));
+    function KakomonTab({ items, tickets, courseFilter, setCourseFilter, onOpen, onEarn, onCreate }) {
+      const courses = Array.from(new Set(items.map(k => k.course).filter(Boolean)));
       const list0 = items.filter(k => !courseFilter || k.course === courseFilter);
       const pinned = pinMine(list0, k => k.mine, k => k.at || 0, () => false);
       const list = list0.filter(k => !pinned.includes(k));
+      const open = (k) => TICKETS_ENABLED ? k.unlocked : true;   // チケットなしの間は、だれでもすべて読める
       const KCard = ({ k }) => (
               <button onClick={() => onOpen(k)} className="w-full text-left bg-surface rounded-3xl border border-line/70 shadow-soft p-4 flex items-center gap-3 press">
-                <span className={cx("w-12 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border", k.unlocked ? "bg-brand-tint text-brand-deep border-brand/30" : "bg-sunk text-mute border-line")}>
-                  <Icon n={k.unlocked ? "description" : "lock"} fill size={24} />
+                <span className={cx("w-12 h-14 rounded-xl flex items-center justify-center flex-shrink-0 border", open(k) ? "bg-brand-tint text-brand-deep border-brand/30" : "bg-sunk text-mute border-line")}>
+                  <Icon n={open(k) ? "lightbulb" : "lock"} fill size={24} />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[11.5px] font-bold text-brand-deep">{k.course}</span>
+                  <span className="block text-[11.5px] font-bold text-brand-deep">{k.course || k.kind}</span>
                   <span className="block font-head font-bold text-[15px] leading-snug truncate">{k.title}</span>
                   <span className="flex items-center gap-2 text-[11.5px] text-mute mt-0.5">
                     <span>{k.kind}</span><span>{displayName(k.by)}</span>
                     <span className="flex items-center gap-0.5"><Icon n="favorite" fill size={12} className="text-love" />{k.thanks}</span>
                   </span>
                 </span>
-                {k.unlocked
-                  ? <span className="text-[12px] font-black text-brand-deep flex-shrink-0">見る</span>
+                {open(k)
+                  ? <span className="text-[12px] font-black text-brand-deep flex-shrink-0">読む</span>
                   : <span className="text-[11.5px] font-black text-sub flex items-center gap-0.5 flex-shrink-0 border border-line rounded-full px-2 py-1"><Icon n="confirmation_number" size={14} />1枚</span>}
               </button>
       );
       return (
         <div className="space-y-5 animate-fade-in">
           <div className="px-1">
-            <h1 className="font-head font-black text-[22px]">過去問ライブラリ</h1>
-            <p className="text-[12.5px] text-sub leading-relaxed">チケット1枚で1件ずっと見られます</p>
+            <h1 className="font-head font-black text-[22px]">先輩の知恵ノート</h1>
+            <p className="text-[12.5px] text-sub leading-relaxed">{TICKETS_ENABLED ? "チケット1枚で1件ずっと見られます" : "授業のコツや対策メモを、先輩が残しています"}</p>
           </div>
-          <TicketCard tickets={tickets} onEarn={onEarn} />
+          {TICKETS_ENABLED && <TicketCard tickets={tickets} onEarn={onEarn} />}
           <ScrollRow className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4">
             <button onClick={() => setCourseFilter("")} aria-pressed={!courseFilter} className={CHIP(!courseFilter)}>すべての授業</button>
             {courses.map(c => <button key={c} onClick={() => setCourseFilter(courseFilter === c ? "" : c)} aria-pressed={courseFilter === c} className={CHIP(courseFilter === c)}>{c}</button>)}
@@ -1946,7 +1960,7 @@
             <button onClick={() => setCourseFilter("")} className="text-[12px] font-bold text-brand-deep flex items-center gap-0.5 press -mt-3 px-1"><Icon n="close" size={15} />絞り込みを解除</button>
           )}
           <div className="space-y-2.5">
-            {pinned.length > 0 && <MyPinned label="共有しました。あなたの過去問・傾向メモ">{pinned.map(k => <KCard key={k.id} k={k} />)}</MyPinned>}
+            {pinned.length > 0 && <MyPinned label="残しました。あなたの知恵">{pinned.map(k => <KCard key={k.id} k={k} />)}</MyPinned>}
             {list.map(k => <KCard key={k.id} k={k} />)}
             {false && list.map(k => (
               <button key={k.id} onClick={() => onOpen(k)} className="w-full text-left bg-surface rounded-3xl border border-line/70 shadow-soft p-4 flex items-center gap-3 press">
@@ -1954,7 +1968,7 @@
                   <Icon n={k.unlocked ? "description" : "lock"} fill size={24} />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-[11.5px] font-bold text-brand-deep">{k.course}</span>
+                  <span className="block text-[11.5px] font-bold text-brand-deep">{k.course || k.kind}</span>
                   <span className="block font-head font-bold text-[15px] leading-snug truncate">{k.title}</span>
                   <span className="flex items-center gap-2 text-[11.5px] text-mute mt-0.5">
                     <span>{k.kind}</span><span>{displayName(k.by)}</span>
@@ -1966,10 +1980,11 @@
                   : <span className="text-[11.5px] font-black text-sub flex items-center gap-0.5 flex-shrink-0 border border-line rounded-full px-2 py-1"><Icon n="confirmation_number" size={14} />1枚</span>}
               </button>
             ))}
-            {list0.length === 0 && <EmptyState icon="description" text="この授業の過去問はまだありません" />}
+            {list0.length === 0 && <EmptyState icon="description" text="この授業の知恵はまだありません" />}
           </div>
-          <p className="text-[12.5px] text-sub bg-sunk rounded-2xl px-3.5 py-2.5 flex items-center gap-1.5"><Icon n="upload_file" size={18} className="text-brand-deep" /><span>過去問・傾向メモの共有は、下の<b className="text-ink">「投稿」</b>から（閲覧チケット+{TICKET_RULES.share}枚）</span></p>
-          <p className="text-[11.5px] text-mute px-1 leading-relaxed">※ 先生が共有を禁止しているものは載せられません。閲覧はアプリ内だけで、保存・転載はできません。</p>
+          
+          <p className="text-[11.5px] text-mute px-1 leading-relaxed">※ 試験問題そのものや、先生が共有を禁止しているものは載せられません。保存・転載はできません。</p>
+          {onCreate && <Fab label="知恵を残す" icon="lightbulb" onClick={onCreate} />}
         </div>
       );
     }
@@ -1977,24 +1992,25 @@
     function KakomonSheet({ item, tickets, onClose, onUnlock, onThanks, onEarn }) {
       return (
         <Sheet onClose={onClose}>
-          <SheetHeader title={item.course} icon="description" onClose={onClose} />
+          <SheetHeader title={item.course || item.kind} icon="lightbulb" onClose={onClose} />
           <div className="px-5 pb-6 pt-1 overflow-y-auto space-y-4">
             <div>
               <p className="font-head font-black text-[19px] leading-snug">{item.title}</p>
-              <p className="text-[12px] text-mute mt-0.5">{item.kind}・共有：{displayName(item.by)}・閲覧 {item.views}</p>
+              <p className="text-[12px] text-mute mt-0.5">{item.kind}・{displayName(item.by)}・閲覧 {item.views}</p>
             </div>
-            {item.unlocked ? (
+            {(item.unlocked || !TICKETS_ENABLED) ? (
               <div className="space-y-3 animate-fade-up">
                 <div className="bg-white text-[#222] rounded-2xl border border-line p-4 space-y-2.5 shadow-soft relative overflow-hidden select-none" onContextMenu={(e) => e.preventDefault()}>
                   <p className="text-[11px] font-bold text-[#888] flex justify-between"><span>{item.course}</span><span>{item.title}</span></p>
                   {item.lines.map((l, i) => <p key={i} className="text-[14px] leading-relaxed border-b border-dashed border-[#ddd] pb-2">{l}</p>)}
                   <p className="absolute right-3 bottom-2 text-[10px] text-[#bbb] font-bold">TUNAGARI内でのみ閲覧可</p>
                 </div>
-                {item.memo && <div className="bg-brand-tint rounded-2xl p-3 text-[13px] leading-relaxed"><span className="block text-[11px] font-black text-brand-deep mb-0.5">共有した人のメモ</span>{item.memo}</div>}
-                <p className="text-[11px] text-mute">※ デモ用のダミーです（実在の試験問題ではありません）</p>
+                {item.memo && <div className="bg-brand-tint rounded-2xl p-3 text-[13px] leading-relaxed"><span className="block text-[11px] font-black text-brand-deep mb-0.5">ひとこと</span>{item.memo}</div>}
+                {item.photo && <img src={item.photo} alt="添付の画像" className="w-full rounded-2xl border border-line" />}
+                <p className="text-[11px] text-mute">※ デモ用のダミーです</p>
                 <button onClick={() => onThanks(item.id)} disabled={item.liked}
                   className={cx("w-full rounded-2xl py-3 font-black text-[14px] flex items-center justify-center gap-1.5 press", item.liked ? "bg-love-tint text-love-ink" : "bg-love text-white shadow-soft")}>
-                  <Icon n="favorite" fill size={18} />{item.liked ? "「助かった！」を送りました" : "共有してくれた人に「助かった！」"}
+                  <Icon n="favorite" fill size={18} />{item.liked ? "「助かった！」を送りました" : "残してくれた人に「助かった！」"}
                 </button>
               </div>
             ) : (
@@ -2029,49 +2045,54 @@
     function ShareKakomonSheet({ courseDict = [], onClose, onSubmit }) {
       const [course, setCourse] = useState("");
       const [title, setTitle] = useState("");
-      const [kind, setKind] = useState("過去問");
+      const [kind, setKind] = useState("対策メモ");
+      const [body, setBody] = useState("");
       const [memo, setMemo] = useState("");
       const [photo, setPhoto] = useState(null);
       const [agree, setAgree] = useState(false);
-      const ok = course.trim() && title.trim() && agree;
+      const ok = title.trim() && body.trim().length >= 10 && agree;
       return (
         <Sheet onClose={onClose}>
-          <SheetHeader title="過去問・傾向メモを共有する" icon="upload_file" onClose={onClose} />
+          <SheetHeader title="知恵を残す" icon="lightbulb" onClose={onClose} />
           <div className="px-5 pb-4 pt-1 overflow-y-auto space-y-4 flex-1">
-            <Segmented value={kind} onChange={setKind} options={[{ value: "過去問", label: "過去問", icon: "description" }, { value: "傾向メモ", label: "傾向メモ", icon: "sticky_note_2" }]} />
+            <Segmented value={kind} onChange={setKind} options={[{ value: "対策メモ", label: "対策メモ", icon: "edit_note" }, { value: "授業のコツ", label: "授業のコツ", icon: "lightbulb" }]} />
             <div>
-              <label className={LABEL} htmlFor="kk-course">授業名</label>
+              <label className={LABEL} htmlFor="kk-course">授業名（任意）</label>
               <CourseInput id="kk-course" dict={courseDict} value={course} onChange={setCourse} onPick={setCourse} placeholder={`例：${U.courseA}`} />
             </div>
             <div>
-              <label className={LABEL} htmlFor="kk-title">年度・種類</label>
-              <input id="kk-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：2025年度 期末試験" className={INPUT} />
+              <label className={LABEL} htmlFor="kk-title">タイトル</label>
+              <input id="kk-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例：期末テストの対策メモ（2025年度）" className={INPUT} />
             </div>
             <div>
-              <label className={LABEL}>写真（任意）</label>
+              <label className={LABEL} htmlFor="kk-body">知恵（10文字以上）</label>
+              <textarea id="kk-body" rows={5} value={body} onChange={(e) => setBody(e.target.value)} placeholder={"例：\n・演習プリントを2周するのが一番効いた\n・最後の授業は必ず出る"} className={cx(INPUT, "leading-relaxed")} />
+            </div>
+            <div>
+              <label className={LABEL}>画像（任意）</label>
               <input type="file" id="kk-photo" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) setPhoto(URL.createObjectURL(f)); }} />
               {photo ? (
                 <div className="relative rounded-3xl overflow-hidden max-h-40 bg-sunk">
                   <img src={photo} alt="" className="w-full h-full object-cover" />
-                  <button onClick={() => setPhoto(null)} aria-label="写真を取り消す" className="absolute top-2 right-2 w-8 h-8 bg-surface/90 rounded-full flex items-center justify-center press"><Icon n="close" size={18} /></button>
+                  <button onClick={() => setPhoto(null)} aria-label="画像を取り消す" className="absolute top-2 right-2 w-8 h-8 bg-surface/90 rounded-full flex items-center justify-center press"><Icon n="close" size={18} /></button>
                 </div>
               ) : (
                 <label htmlFor="kk-photo" className="border-2 border-dashed border-line rounded-2xl p-4 bg-sunk/60 flex items-center justify-center gap-2 cursor-pointer text-sub press">
-                  <Icon n="add_a_photo" size={22} /><span className="text-[13px] font-bold">写真を添付</span>
+                  <Icon n="add_a_photo" size={22} /><span className="text-[13px] font-bold">画像を添付（自分で作ったノートなど）</span>
                 </label>
               )}
             </div>
             <div>
               <label className={LABEL} htmlFor="kk-memo">ひとことメモ（任意）</label>
-              <textarea id="kk-memo" rows={3} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="例：問3は毎年ほぼ同じ形式でした" className={cx(INPUT, "leading-relaxed")} />
+              <textarea id="kk-memo" rows={3} value={memo} onChange={(e) => setMemo(e.target.value)} placeholder="例：わからないところは先生のオフィスアワーが頼りになります" className={cx(INPUT, "leading-relaxed")} />
             </div>
             <label className="flex items-start gap-3 bg-sunk rounded-3xl p-3.5 cursor-pointer select-none">
               <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 w-4 h-4 accent-[rgb(var(--brand))]" />
-              <span className="text-[13px] leading-relaxed"><b>先生が共有を禁止していないもの</b>です。名前・学籍番号が写っていないことを確認しました。</span>
+              <span className="text-[13px] leading-relaxed"><b>試験問題そのものや、先生が共有を禁止しているものは含みません。</b>名前・学籍番号が入っていないことを確認しました。</span>
             </label>
           </div>
           <div className="px-4 pt-3 pb-4 border-t border-line">
-            <button disabled={!ok} onClick={() => onSubmit({ course: (courseDict.find(c => c.norm === normCourse(course)) || { name: course.trim() }).name, title: title.trim(), kind, memo: memo.trim() })} className={cx(BTN_PRIMARY, "w-full")}>共有する（閲覧チケット+{TICKET_RULES.share}枚）</button>
+            <button disabled={!ok} onClick={() => onSubmit({ course: course.trim() ? (courseDict.find(c => c.norm === normCourse(course)) || { name: course.trim() }).name : "", title: title.trim(), kind, memo: memo.trim(), body: body.trim(), photo })} className={cx(BTN_PRIMARY, "w-full")}>{TICKETS_ENABLED ? `知恵を残す（閲覧チケット+${TICKET_RULES.share}枚）` : "知恵を残す"}</button>
           </div>
         </Sheet>
       );
@@ -2147,10 +2168,12 @@
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="bg-sunk rounded-2xl py-2.5"><p className="text-[11px] text-sub font-bold">ペタした</p><p className="font-head font-black text-[20px]">{myComments.length}</p></div>
               <div className="bg-sunk rounded-2xl py-2.5"><p className="text-[11px] text-sub font-bold">助かった！</p><p className="font-head font-black text-[20px] text-love-ink">{gotThanks}</p></div>
-              <button onClick={onGoKakomon} className="bg-brand-tint rounded-2xl py-2.5 press"><p className="text-[11px] text-brand-deep font-bold">閲覧チケット</p><p className="font-head font-black text-[20px] text-brand-deep">{tickets}</p></button>
+              {TICKETS_ENABLED
+                ? <button onClick={onGoKakomon} className="bg-brand-tint rounded-2xl py-2.5 press"><p className="text-[11px] text-brand-deep font-bold">閲覧チケット</p><p className="font-head font-black text-[20px] text-brand-deep">{tickets}</p></button>
+                : <div className="bg-brand-tint rounded-2xl py-2.5"><p className="text-[11px] text-brand-deep font-bold">いちばん助かった</p><p className="font-head font-black text-[20px] text-brand-deep">{bestCount}</p></div>}
             </div>
-            {bestCount > 0 && <p className="text-[12.5px] font-bold text-brand-deep flex items-center gap-1"><Icon n="workspace_premium" fill size={16} />「いちばん助かった」に{bestCount}回選ばれました</p>}
-            <p className="text-[11.5px] text-mute flex items-start gap-1 leading-relaxed"><Icon n="visibility" size={14} className="mt-px flex-shrink-0" />チケット以外はほかの人にも見えます</p>
+            {TICKETS_ENABLED && bestCount > 0 && <p className="text-[12.5px] font-bold text-brand-deep flex items-center gap-1"><Icon n="workspace_premium" fill size={16} />「いちばん助かった」に{bestCount}回選ばれました</p>}
+            <p className="text-[11.5px] text-mute flex items-start gap-1 leading-relaxed"><Icon n="visibility" size={14} className="mt-px flex-shrink-0" />{TICKETS_ENABLED ? "チケット以外はほかの人にも見えます" : "この数字は、あなたのペタの名前を押した人にも見えます"}</p>
           </div>
 
           <Segmented value={sub} onChange={setSub} options={[
@@ -2211,7 +2234,7 @@
         "テンプレートから質問（商大：文章を考えずに手軽に質問できるのが良い）",
         "匿名でも学内限定・学年は表示（商大：学内限定なら匿名でも信頼できる）",
         "「助かった！」の数で信頼を見える化（商大：リアクションが多いほど信頼できる／北大：いいねだけでも投稿の動機になる）",
-        "回答で貯まる閲覧チケット→過去問ライブラリ（商大：回答して過去問が見られる仕組みは強い動機）",
+        "先輩の知恵ノート（授業のコツ・対策メモ。11/6に「過去問」から言い方を変更）。閲覧チケットは11/6の決定で非表示にし、得るはずだった枚数だけ中で数えている（今後の開発で追加）",
         "生活ハック（勉強法・メール術など）と仲間募集のカテゴリ（北大：これがないと使わない）",
         "学年ごとの「あなた向け」と前期・後期の自動切り替え（北大：ELMSのように時期・学年で切り替わってほしい）",
         "AI要約・似た質問への合流・通報・お知らせ（WBSのMVP範囲）",
@@ -2240,8 +2263,8 @@
         "ヘッダーはメニューだけ。チケットは過去問タブ、QRはマイページ。チケットの説明は初めて回答したときに1回だけ出す",
         "スクロール位置：新しい画面に進むと先頭から、元の画面に戻る（タブの行き来・絞り込み解除・仲間・イベントやお題一覧を閉じる・設定の中のページから戻る）と離れたときの位置のまま。いま開いているタブをもう一度押すと先頭へ。「これまでのお題を全て見る」は絞り込みではなく別画面の一覧",
         "絞り込み中の表示：「< ホーム」をやめ、色付きの帯に「絞り込み中」と条件の札（×で外せる）を出す。「すべて解除」で条件を全部外すとホームの表示に戻る（プロトタイプを触った人の声：解除方法が分かりにくい）",
-        "ホームの絞り込みは検索欄の下の1列だけ：前期・後期で変わる話題（後期なら期末テスト・過去問／後期の履修／冬の通学／ゼミ選び／インターン）＋「もっと」で全カテゴリ。「あなた向け」見出し横の絞り込みは重複していたため削除",
-        "作る入口は下の「投稿」1か所だけ：ホームの［先輩に質問する］、仲間・イベントの［作る］、過去問タブの［共有する］は削除。「投稿」を開くと、いまいる画面に合う項目が一番上に出る（ホーム＝質問／過去問タブ＝過去問の共有／仲間・イベント＝募集・イベント）。例外として、検索で見つからなかったときの「この内容で質問する」だけ残す（キーワードとカテゴリを引き継ぐため）。仲間・イベント画面でも下のメニューを常に表示",
+        "ホームの絞り込みは検索欄の下の1列だけ：前期・後期で変わる話題（後期なら期末テスト対策／後期の履修／冬の通学／ゼミ選び／インターン）＋「もっと」で全カテゴリ。「あなた向け」見出し横の絞り込みは重複していたため削除",
+        "作る入口は下の「投稿」1か所だけ：ホームの［先輩に質問する］、仲間・イベントの［作る］、知恵タブの［残す］は削除。「投稿」を開くと、いまいる画面に合う項目が一番上に出る（ホーム＝質問／過去問タブ＝過去問の共有／仲間・イベント＝募集・イベント）。例外として、検索で見つからなかったときの「この内容で質問する」だけ残す（キーワードとカテゴリを引き継ぐため）。仲間・イベント画面でも下のメニューを常に表示",
         "質問は1つの画面：①話題を選ぶ → 話題に合った「書き方の例」が出る → ②例を押して【授業名】などを書きかえる、または例を見て自分で書く（話題を選ばずに書いた場合は、書いた文から話題を自動で選ぶ）。何を書けばいいか分からない人のために、話題を先に置いた。授業名は、入力し始めるとほかの人が入れた授業名を候補に出す（全角/半角・空白・ⅠとIと1の違いはそろえて比べ、「もしかして」で同じ授業にそろえる）。表記ゆれを抑え、同じ授業の質問と過去問をつなぐため。過去問の共有も同じ入力欄。テンプレート7つから選ぶ形はやめ、「投稿」の中は質問する／人を集める／知恵を残すの3行にそろえた。運営のお題は学生には出さない",
         "仲間募集とイベントを統合：入口・入力画面・一覧を1つに。「日時・場所を決める」がオフ＝いつでも・ゆるい募集、オン＝イベント。反応は「参加したい＋ひとこと」にそろえた。日時ありは主催者名（団体名かニックネーム）が必須、日時なしは匿名もOK。仲間募集はQ&Aのカテゴリから外し「仲間・イベント」へ移した",
         "確かめ方：新入生に近い人にホームを5秒見せて「このアプリで何ができる？」と聞き、「先輩に聞ける」と答えてもらえるか"
@@ -3241,10 +3264,12 @@
         const c = { id: Date.now(), user: myUser(anon), text, at: Date.now(), thanks: 0, liked: false };
         updatePost(postId, x => ({ ...x, comments: [...x.comments, c] }));
         if (first && !recruit) {
-          setTickets(t => t + TICKET_RULES.answer);
-          if (!ticketIntroSeen.current) { ticketIntroSeen.current = true; setTimeout(() => setTicketIntro(true), 400); }
-          showToast(`ペタありがとう！チケット+${TICKET_RULES.answer}枚`);
-          pushNotice({ kind: "ticket", title: `閲覧チケット+${TICKET_RULES.answer}枚`, preview: `${odai ? "お題にペタって" : "質問にペタって"}くれたお礼です。過去問ライブラリで使えます` });
+          setTickets(t => t + TICKET_RULES.answer);   // チケットを出さない間も、得るはずだった枚数は中で数える
+          if (TICKETS_ENABLED) {
+            if (!ticketIntroSeen.current) { ticketIntroSeen.current = true; setTimeout(() => setTicketIntro(true), 400); }
+            showToast(`ペタありがとう！チケット+${TICKET_RULES.answer}枚`);
+            pushNotice({ kind: "ticket", title: `閲覧チケット+${TICKET_RULES.answer}枚`, preview: `${odai ? "お題にペタって" : "質問にペタって"}くれたお礼です。先輩の知恵ノートで使えます` });
+          } else showToast("ペタありがとう！");
         } else showToast(recruit ? "返信しました" : odai ? "ペタりました" : "ペタりました");
         // デモ：少しあとに「助かった！」（お題は「なるほど」）が届く
         later(() => {
@@ -3325,14 +3350,16 @@
         setKakomon(prev => prev.map(k => k.id === kid ? { ...k, unlocked: true, views: k.views + 1 } : k));
         showToast("チケットを1枚使いました");
       };
-      const shareKakomon = ({ course, title, kind, memo }) => {
-        const item = { id: `k${Date.now()}`, at: Date.now(), course, title, kind, memo, by: myUser(me.anonDefault), thanks: 0, views: 0, unlocked: true, mine: true, lines: ["（あなたが共有した内容がここに表示されます）"] };
+      const shareKakomon = ({ course, title, kind, memo, body, photo }) => {
+        const item = { id: `k${Date.now()}`, at: Date.now(), course, title, kind, memo, photo, by: myUser(me.anonDefault), thanks: 0, views: 0, unlocked: true, mine: true, lines: (body || "").split("\n").filter(Boolean) };
         setKakomon(prev => [item, ...prev]);
         setTickets(t => t + TICKET_RULES.share);
         setShareOpen(false);
         closeOverlays(); setKakomonCourse(""); scrollMem.current.kakomon = 0; setTab("kakomon"); window.scrollTo(0, 0);
-        showToast(`共有ありがとう！チケット+${TICKET_RULES.share}枚`);
-        pushNotice({ kind: "ticket", title: `閲覧チケット+${TICKET_RULES.share}枚`, preview: `【${course}】を共有してくれたお礼です` });
+        if (TICKETS_ENABLED) {
+          showToast(`残してくれてありがとう！チケット+${TICKET_RULES.share}枚`);
+          pushNotice({ kind: "ticket", title: `閲覧チケット+${TICKET_RULES.share}枚`, preview: `「${title}」を残してくれたお礼です` });
+        } else showToast("知恵を残しました。ありがとう！");
       };
       const kakomonThanks = (kid) => setKakomon(prev => prev.map(k => k.id === kid ? { ...k, liked: true, thanks: k.thanks + 1 } : k));
       // 授業名の辞書（ほかの人が入れた授業名＋質問・過去問に付いた授業名。表記ゆれは normCourse でまとめる）
@@ -3592,13 +3619,13 @@
           <nav className="fixed left-0 right-0 mx-auto w-[calc(100%-1.5rem)] max-w-[26rem] glass rounded-full shadow-lift flex justify-around items-center p-1.5 z-30" style={{ bottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
             {[
               { tab: "home", icon: "home", label: "ホーム" },
-              { tab: "kakomon", icon: "description", label: "過去問" },
+              { tab: "kakomon", icon: "lightbulb", label: "知恵" },
               { center: true },
               { tab: "notices", icon: "notifications", label: "お知らせ" },
               { tab: "me", icon: "person", label: "マイページ" }
             ].map(item => item.center ? (
               <div key="center" className="w-[72px] flex-shrink-0 self-stretch relative">
-                <button onClick={() => setAsk({})} aria-label="投稿する（質問・仲間・イベント・過去問）"
+                <button onClick={() => setAsk({})} aria-label="投稿する（質問・仲間・イベント・知恵）"
                   className="absolute left-1/2 -top-8 w-[66px] h-[66px] rounded-full text-on-brand flex flex-col items-center justify-center gap-0.5 press"
                   style={{ transform: "translateX(-50%)", background: "rgb(var(--brand))", boxShadow: "0 0 0 5px rgb(var(--bg)), 0 10px 20px -10px rgb(0 0 0 / .35)" }}>
                   <Icon n="add" size={30} /><span className="text-[12px] font-black leading-none">投稿</span>
@@ -3636,11 +3663,11 @@
                 <Icon n="confirmation_number" fill size={48} className="text-brand" />
                 <div className="space-y-1.5">
                   <h3 className="font-head font-black text-[18px]">閲覧チケットをもらいました</h3>
-                  <p className="text-[13.5px] text-sub leading-relaxed">ペタってくれたお礼です。<br />チケット1枚で、先輩が共有した過去問を1件ずっと見られます。</p>
+                  <p className="text-[13.5px] text-sub leading-relaxed">ペタってくれたお礼です。<br />チケット1枚で、先輩が残した知恵を1件ずっと見られます。</p>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setTicketIntro(false)} className={cx(BTN_SOFT, "flex-1")}>あとで</button>
-                  <button onClick={() => { setTicketIntro(false); setSelectedPostId(null); closeOverlays(); setTab("kakomon"); }} className={cx(BTN_PRIMARY, "flex-[2] text-[14px]")}>過去問を見る</button>
+                  <button onClick={() => { setTicketIntro(false); setSelectedPostId(null); closeOverlays(); setTab("kakomon"); }} className={cx(BTN_PRIMARY, "flex-[2] text-[14px]")}>先輩の知恵を見る</button>
                 </div>
               </div>
             </Dialog>
